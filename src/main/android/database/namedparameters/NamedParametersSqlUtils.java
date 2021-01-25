@@ -1,5 +1,6 @@
 package main.android.database.namedparameters;
 
+import main.android.database.namedparameters.exceptions.ArgumentsListNullException;
 import main.android.database.utils.SqlValueParseUtils;
 import main.android.database.namedparameters.exceptions.NamedParameterNotFoundException;
 import main.android.database.utils.ValueParseUtils;

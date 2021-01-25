@@ -1,11 +1,8 @@
-package main.android.database.utils;
+package main.android.database.utils.database;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
-public class ValueParseUtils {
+public class SqlValueParser {
 
     public static String parse(int value){
         return String.valueOf(value);
@@ -54,9 +51,17 @@ public class ValueParseUtils {
         return "null";
     }
 
+    public static String parse(String value){
+        if(value == null)
+            return "\"\"";
+        if(value.startsWith("\"") && value.endsWith("\""))
+            return value;
+        return "\"" + value + "\"";
+    }
+
     public static String parse(Object value){
         if(value == null)
-            return ValueParseUtils.nullValue();
+            return SqlValueParser.nullValue();
         if(value instanceof Boolean)
             return parse((boolean)value);
         if(value instanceof Integer)
@@ -67,6 +72,8 @@ public class ValueParseUtils {
             return parse((double)value);
         if(value instanceof Collection)
             return parse(((Collection)value).toArray());
+        if(value instanceof CharSequence)
+            return parse(value.toString());
         if(value instanceof Map)
             return parse((Map)value);
         if(value instanceof ISqlParameterValue)

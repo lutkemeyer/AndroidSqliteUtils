@@ -1,22 +1,22 @@
-package main.android.database.utils;
+package main.android.database.utils.database;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import com.sun.istack.internal.NotNull;
 import main.android.database.namedparameters.NamedParametersMap;
-import main.android.database.namedparameters.NamedParametersSqlUtils;
 import main.android.database.namedparameters.exceptions.NamedParameterNotFoundException;
-import main.android.database.utils.rowmapper.RowMapper;
-import main.android.database.utils.rowmapper.RowMapperHandler;
+import main.android.database.utils.database.rowmapper.RowMapper;
+import main.android.database.utils.database.rowmapper.RowMapperHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AndroidDatabaseUtil {
 
     private SQLiteDatabase sqLiteDatabase;
 
-    public AndroidDatabaseUtil(@NotNull SQLiteDatabase sqLiteDatabase) {
+    public AndroidDatabaseUtil(SQLiteDatabase sqLiteDatabase) {
         this.sqLiteDatabase = sqLiteDatabase;
     }
 
@@ -24,68 +24,124 @@ public class AndroidDatabaseUtil {
         return getList(sql, (String[])null, rowMapper);
     }
 
-    public <T> List<T> getListFromNamedParametersSql(String sql, NamedParametersMap parametersMap, RowMapper<T> rowMapper){
-        try {
-            List<Object> outArgs = new ArrayList<>();
-            String parsedSql = NamedParametersSqlUtils.parseNamedParameters(sql, parametersMap, outArgs);
-            String[] paramList = new String[outArgs.size()];
-            for(int i = 0, size = outArgs.size(); i < size; i++){
-                paramList[i] = ValueParseUtils.parse(outArgs.get(i));
+    public <T> List<T> getList(String sql, String[] sqlArgs, RowMapper<T> rowMapper){
+        try(Cursor cursor = sqLiteDatabase.rawQuery(sql, sqlArgs)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                RowMapperHandler handler = new RowMapperHandler(cursor);
+                List<T> list = new ArrayList<>();
+                do {
+                    list.add(rowMapper.onMap(cursor.getPosition(), cursor, handler));
+                } while (cursor.moveToNext());
+                return list;
             }
-            return getList(parsedSql, paramList, rowMapper);
-        } catch (NamedParameterNotFoundException e) {
-            e.printStackTrace();
         }
-        return new ArrayList<T>();
+        return new ArrayList<>();
     }
 
-    public <T> List<T> getList(String sql, String[] sqlArgs, RowMapper<T> rowMapper){
-        List<T> list = new ArrayList<>();
-        if(sqLiteDatabase == null || rowMapper == null)
-            return list;
-        Cursor cursor = sqLiteDatabase.rawQuery(sql, sqlArgs);
-        if(cursor != null && cursor.moveToFirst()){
-            RowMapperHandler handler = new RowMapperHandler(cursor);
-            do {
-                list.add(rowMapper.onMap(cursor.getPosition(), cursor, handler));
-            }while(cursor.moveToNext());
-            cursor.close();
-        }
-        return list;
+    public <T> List<T> getList(String sql, NamedParametersMap namedParams, RowMapper<T> rowMapper)
+            throws NamedParameterNotFoundException{
+        List<Object> outArgs = new ArrayList<>();
+        String parsedSql = parseNamedParameters(sql, namedParams, outArgs);
+        String[] sqlArgs = objectParamsToStringArgs(outArgs);
+        return getList(parsedSql, sqlArgs, rowMapper);
     }
 
     public <T> T getFirstObject(String sql, RowMapper<T> rowMapper){
-        return getFirstObject(sql, null, rowMapper);
+        return getFirstObject(sql, (String[])null, rowMapper);
     }
 
     public <T> T getFirstObject(String sql, String[] sqlArgs, RowMapper<T> rowMapper){
-        if(sqLiteDatabase == null || rowMapper == null)
-            return null;
-        T object = null;
-        Cursor cursor = sqLiteDatabase.rawQuery(sql, sqlArgs);
-        if(cursor != null && cursor.moveToFirst()){
-            RowMapperHandler handler = new RowMapperHandler(cursor);
-            object = rowMapper.onMap(cursor.getPosition(), cursor, handler);
-            cursor.close();
-        }
-        return object;
-    }
-
-    public <T> T getLastObject(String sql, RowMapper<T> rowMapper){
-        return getFirstObject(sql, null, rowMapper);
-    }
-
-    public <T> T getLastObject(String sql, String[] sqlArgs, RowMapper<T> rowMapper){
-        if(sqLiteDatabase == null || rowMapper == null)
-            return null;
-        Cursor cursor = sqLiteDatabase.rawQuery(sql, sqlArgs);
-        if(cursor != null && cursor.moveToLast()){
-            RowMapperHandler handler = new RowMapperHandler(cursor);
-            T object = rowMapper.onMap(cursor.getPosition(), cursor, handler);
-            cursor.close();
-            return object;
+        try(Cursor cursor = sqLiteDatabase.rawQuery(sql, sqlArgs)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                RowMapperHandler handler = new RowMapperHandler(cursor);
+                return rowMapper.onMap(cursor.getPosition(), cursor, handler);
+            }
         }
         return null;
     }
+
+    public <T> T getFirstObject(String sql, NamedParametersMap namedParams, RowMapper<T> rowMapper)
+            throws NamedParameterNotFoundException{
+        List<Object> outArgs = new ArrayList<>();
+        String parsedSql = parseNamedParameters(sql, namedParams, outArgs);
+        String[] sqlArgs = objectParamsToStringArgs(outArgs);
+        return getFirstObject(parsedSql, sqlArgs, rowMapper);
+    }
+
+    public <T> T getLastObject(String sql, RowMapper<T> rowMapper){
+        return getFirstObject(sql, (String[])null, rowMapper);
+    }
+
+    public <T> T getLastObject(String sql, String[] sqlArgs, RowMapper<T> rowMapper){
+        try(Cursor cursor = sqLiteDatabase.rawQuery(sql, sqlArgs)) {
+            if (cursor != null && cursor.moveToLast()) {
+                RowMapperHandler handler = new RowMapperHandler(cursor);
+                return rowMapper.onMap(cursor.getPosition(), cursor, handler);
+            }
+        }
+        return null;
+    }
+
+    public <T> T getLastObject(String sql, NamedParametersMap namedParams, RowMapper<T> rowMapper)
+            throws NamedParameterNotFoundException{
+        List<Object> outArgs = new ArrayList<>();
+        String parsedSql = parseNamedParameters(sql, namedParams, outArgs);
+        String[] sqlArgs = objectParamsToStringArgs(outArgs);
+        return getLastObject(parsedSql, sqlArgs, rowMapper);
+    }
+
+    private String[] objectParamsToStringArgs(List<Object> objectParams){
+        String[] array = new String[objectParams.size()];
+        for(int i = 0, size = objectParams.size(); i < size; i++){
+            array[i] = SqlValueParser.parse(objectParams.get(i));
+        }
+        return array;
+    }
+
+    /**
+     *  Método que converte uma sql com parâmetros nomeados em uma
+     *  sql com parâmetros não nomeados, inserindo os parâmetros ordenadamente
+     *  na lista recebida por parâmetro.
+     *
+     * @param sql é a sql base com os named parameters.
+     *            Ex.: SELECT * FROM TABLE WHERE FIELD = #FIELDNAME
+     * @param parameters é o objeto que contém os parâmtros nomeados.
+     *                   Atenção: todos os parâmetros existentes na sql,
+     *                   deverão conter no mapa, se faltar algum parâmetro,
+     *                   é lançado uma {@link NamedParameterNotFoundException}.
+     *
+     * @param outArgs é a lista onde são inseridos os argumentos ordenadamente
+     *
+     * @return a sql com parâmetros não nomeados.
+     * Ex.: SELECT * FROM TABLE WHERE FIELD = ?
+     *
+     * @throws NamedParameterNotFoundException se houver um parâmetro nomeado
+     * na sql que não houver no mapa e parâmetros
+     */
+    private String parseNamedParameters(String sql, NamedParametersMap parameters, List<Object> outArgs)
+            throws NamedParameterNotFoundException {
+        if(sql == null || sql.trim().isEmpty())
+            return "";
+
+        String sqlResult = sql;
+
+        Matcher m = Pattern.compile("[#]\\w+").matcher(sql);
+
+        while (m.find()) {
+            String parameter = m.group();
+            String parameterKey = parameter.substring(1);
+
+            if(parameters.containsKey(parameterKey)){
+                Object value = parameters.getValue(parameterKey);
+                sqlResult = sqlResult.replaceFirst(parameter, "?");
+                outArgs.add(value);
+            }else{
+                throw new NamedParameterNotFoundException("Parameter '" + parameterKey + "' was not found in: " + parameters);
+            }
+        }
+        return sqlResult;
+    }
+
+
 
 }
