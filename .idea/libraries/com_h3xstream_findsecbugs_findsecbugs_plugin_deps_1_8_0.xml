@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="com.h3xstream.findsecbugs:findsecbugs-plugin-deps:1.8.0" type="repository">
+    <properties maven-id="com.h3xstream.findsecbugs:findsecbugs-plugin-deps:1.8.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/h3xstream/findsecbugs/findsecbugs-plugin-deps/1.8.0/findsecbugs-plugin-deps-1.8.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/commons-codec/commons-codec/1.9/commons-codec-1.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
