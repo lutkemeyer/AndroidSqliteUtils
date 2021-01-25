@@ -11,8 +11,13 @@ public class SqlInjectionObject implements ISqlParameterValue{
     }
 
     public SqlInjectionObject append(String sqlInjection){
-        if(sqlInjection != null)
-            sb.append(sqlInjection);
+        if(sqlInjection != null){
+            if(sb.length() > 0){
+                sb.append(" \n").append(sqlInjection);
+            }else{
+                sb.append(sqlInjection);
+            }
+        }
         return this;
     }
 

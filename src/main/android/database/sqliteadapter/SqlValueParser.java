@@ -31,6 +31,14 @@ public class SqlValueParser {
         return sb.toString();
     }
 
+    /**
+     * Método que transforma os valores da coleção passada por parâmetro.
+     * Elimina valores repetidos
+     *
+     * @param collection
+     * @param <T>
+     * @return
+     */
     public static <T> String parse(Collection<T> collection){
         if(collection == null)
             return "";

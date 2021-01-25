@@ -1,6 +1,7 @@
 package test.android.database.sqliteadapter;
 
 import main.android.database.sqliteadapter.ISqlParameterValue;
+import main.android.database.sqliteadapter.SqlInjectionObject;
 import main.android.database.sqliteadapter.SqlValueParser;
 import org.junit.Assert;
 import org.junit.Test;
@@ -70,11 +71,13 @@ public class SqlValueParserTest {
     }
     @Test
     public void parseList5Test(){
-        Assert.assertEquals("", SqlValueParser.parse(new ArrayList()));
+        List<String> lista = new ArrayList<String>();
+        Assert.assertEquals("", SqlValueParser.parse(lista));
     }
     @Test
     public void parseList6Test(){
-        Assert.assertEquals("", SqlValueParser.parse((List)null));
+        List<String> lista = null;
+        Assert.assertEquals("", SqlValueParser.parse(lista));
     }
     @Test
     public void parseList7Test(){
@@ -94,16 +97,43 @@ public class SqlValueParserTest {
     }
     @Test
     public void parseSet3Test(){
-        Assert.assertEquals("", SqlValueParser.parse(new HashSet<>()));
+        Set<String> set = new HashSet<>();
+        Assert.assertEquals("", SqlValueParser.parse(set));
     }
     @Test
     public void parseSet4Test(){
-        Assert.assertEquals("", SqlValueParser.parse((Set)null));
+        Set<String> set = null;
+        Assert.assertEquals("", SqlValueParser.parse(set));
     }
     @Test
     public void parseSet5Test(){
         Set<Integer> set = new HashSet<>(Arrays.asList(1,2,3,3));
         Assert.assertEquals("1, 2, 3", SqlValueParser.parse(set));
+    }
+
+    @Test
+    public void parseMap1Test(){
+        Map<String, Integer> map = new HashMap<>();
+        map.put("key1", 1);
+        map.put("key2", 2);
+        map.put("key3", 3);
+        Assert.assertEquals("1, 2, 3", SqlValueParser.parse(map));
+    }
+    @Test
+    public void parseMap2Test(){
+        Map<String, String> map = new HashMap<>();
+        map.put("key1", "1");
+        map.put("key2", "2");
+        map.put("key3", "3");
+        Assert.assertEquals("\"1\", \"2\", \"3\"", SqlValueParser.parse(map));
+    }
+    @Test
+    public void parseMap3Test(){
+        Map<String, ClassTest> map = new HashMap<>();
+        map.put("key1", new ClassTest("class1"));
+        map.put("key2", new ClassTest("class2"));
+        map.put("key3", new ClassTest("class3"));
+        Assert.assertEquals("\"class1\", \"class2\", \"class3\"", SqlValueParser.parse(map));
     }
 
     @Test
@@ -142,30 +172,25 @@ public class SqlValueParserTest {
     }
 
     @Test
-    public void parseMap1Test(){
-        Map<String, Integer> map = new HashMap<>();
-        map.put("key1", 1);
-        map.put("key2", 2);
-        map.put("key3", 3);
-        Assert.assertEquals("1, 2, 3", SqlValueParser.parse(map));
+    public void parseSqlInjectionObject1Test(){
+        SqlInjectionObject sqlInjectionObj = new SqlInjectionObject();
+        Assert.assertEquals("", SqlValueParser.parse(sqlInjectionObj));
     }
     @Test
-    public void parseMap2Test(){
-        Map<String, String> map = new HashMap<>();
-        map.put("key1", "1");
-        map.put("key2", "2");
-        map.put("key3", "3");
-        Assert.assertEquals("\"1\", \"2\", \"3\"", SqlValueParser.parse(map));
+    public void parseSqlInjectionObject2Test(){
+        SqlInjectionObject sqlInjectionObj = new SqlInjectionObject("SELECT * FROM CARRO");
+        Assert.assertEquals("SELECT * FROM CARRO", SqlValueParser.parse(sqlInjectionObj));
     }
     @Test
-    public void parseMap3Test(){
-        Map<String, ClassTest> map = new HashMap<>();
-        map.put("key1", new ClassTest("class1"));
-        map.put("key2", new ClassTest("class2"));
-        map.put("key3", new ClassTest("class3"));
-        Assert.assertEquals("\"class1\", \"class2\", \"class3\"", SqlValueParser.parse(map));
+    public void parseSqlInjectionObject3Test(){
+        SqlInjectionObject sqlInjectionObj = new SqlInjectionObject()
+                .append("SELECT")
+                .append("*")
+                .append("FROM")
+                .append("CARRO");
+        Assert.assertEquals("SELECT \n* \nFROM \nCARRO", SqlValueParser.parse(sqlInjectionObj));
     }
-
+    
     private static class ClassTest implements ISqlParameterValue {
 
         private String name;
