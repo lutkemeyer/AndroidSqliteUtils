@@ -1,4 +1,4 @@
-package test;
+package test.android.database.namedparameters;
 
 import main.android.database.namedparameters.NamedParametersMap;
 import main.android.database.namedparameters.NamedParametersSqlUtils;
@@ -6,7 +6,7 @@ import main.android.database.namedparameters.exceptions.NamedParameterNotFoundEx
 import org.junit.Assert;
 import org.junit.Test;
 
-public class NamedParametersSqlUtilTest {
+public class NamedParametersSqlUtilsTest {
     @Test
     public void substituteNamedParameters1Test(){
 
@@ -64,7 +64,7 @@ public class NamedParametersSqlUtilTest {
         String subselect = "SELECT NOME FROM TABELA";
 
         NamedParametersMap map = new NamedParametersMap();
-        map.put("SUBSELECT1", subselect, true);
+        map.put("SUBSELECT1", subselect);
 
         try {
             String parsedSql = NamedParametersSqlUtils.substituteNamedParameters(sql, map);

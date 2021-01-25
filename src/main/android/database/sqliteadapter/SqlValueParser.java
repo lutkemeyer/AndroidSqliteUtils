@@ -23,21 +23,21 @@ public class SqlValueParser {
         array = new HashSet<>(Arrays.asList(array)).toArray();
 
         StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < array.length; i++){
-            sb.append( parse( array[i] ) );
-            if(i < array.length - 1)
-                sb.append(", ");
+        for(int i = 0; i < array.length - 1; i++){
+            sb.append( parse( array[i] ) ).append(", ");
         }
+        sb.append( parse( array[array.length-1] ) );
+
         return sb.toString();
     }
 
-    public static String parse(Collection collection){
+    public static <T> String parse(Collection<T> collection){
         if(collection == null)
             return "";
         return parse(collection.toArray());
     }
 
-    public static String parse(Map map){
+    public static <K,V> String parse(Map<K,V> map){
         if(map == null || map.isEmpty())
             return "";
         return parse(map.values());
@@ -73,6 +73,8 @@ public class SqlValueParser {
         if(value instanceof Collection)
             return parse(((Collection)value).toArray());
         if(value instanceof CharSequence)
+            return parse(value.toString());
+        if(value instanceof Character)
             return parse(value.toString());
         if(value instanceof Map)
             return parse((Map)value);
