@@ -1,11 +1,11 @@
-package main.android.database.utils.database;
+package main.android.database.sqliteadapter;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import main.android.database.namedparameters.NamedParametersMap;
 import main.android.database.namedparameters.exceptions.NamedParameterNotFoundException;
-import main.android.database.utils.database.rowmapper.RowMapper;
-import main.android.database.utils.database.rowmapper.RowMapperHandler;
+import main.android.database.rowmapper.RowMapper;
+import main.android.database.rowmapper.RowMapperHandler;
 
 import java.util.ArrayList;
 import java.util.List;

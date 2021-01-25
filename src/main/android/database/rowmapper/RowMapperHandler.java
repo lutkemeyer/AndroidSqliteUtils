@@ -1,5 +1,4 @@
-package main.android.database.utils.rowmapper;
-
+package main.android.database.rowmapper;
 
 import android.database.Cursor;
 

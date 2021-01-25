@@ -1,4 +1,4 @@
-package main.android.database.utils.database;
+package main.android.database.sqliteadapter;
 
 import java.util.*;
 
