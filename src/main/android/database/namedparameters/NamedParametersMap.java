@@ -1,31 +1,24 @@
 package main.android.database.namedparameters;
 
-import main.android.database.utils.SqlValueParseUtils;
-import main.android.database.utils.ValueParseUtils;
+
+import main.android.database.sqliteadapter.SqlValueParser;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class NamedParametersMap {
 
-    private Map<String, NamedParameterMapObject> parameters;
+    private Map<String, Object> parameters;
 
     public NamedParametersMap(Map<String, Object> initialValues) {
         this();
-        if(initialValues != null && !initialValues.isEmpty()){
-            for(Map.Entry<String, Object> entry : initialValues.entrySet()){
-                parameters.put(entry.getKey(), new NamedParameterMapObject(entry.getValue()));
-            }
-        }
-    }
-
-    public NamedParametersMap(String key, Object value, boolean injectInSql){
-        this();
-        put(key, value, injectInSql);
+        if(initialValues != null && !initialValues.isEmpty())
+            parameters.putAll(initialValues);
     }
 
     public NamedParametersMap(String key, Object value) {
-        this(key, value, false);
+        this();
+        put(key, value);
     }
 
     public NamedParametersMap() {
@@ -33,12 +26,8 @@ public class NamedParametersMap {
     }
 
     public NamedParametersMap put(String key, Object value){
-        return put(key, value, false);
-    }
-
-    public NamedParametersMap put(String key, Object value, boolean isSqlInjection){
-        if(key != null && !key.trim().isEmpty())
-            this.parameters.put(key, new NamedParameterMapObject(value, isSqlInjection));
+        if(key != null && !key.trim().isEmpty() && value != null)
+            this.parameters.put(key, value);
         return this;
     }
 
@@ -52,7 +41,7 @@ public class NamedParametersMap {
         return key != null && this.parameters.containsKey(key);
     }
 
-    public NamedParameterMapObject getValue(String key){
+    public Object getValue(String key){
         return containsKey(key) ? this.parameters.get(key) : null;
     }
 
@@ -61,60 +50,24 @@ public class NamedParametersMap {
         return parameters.toString();
     }
 
-    public String toStringValues(){
-        return toStringValues(false);
-    }
-    public String toStringValues(boolean formated){
+    public String toSqlValuesString(boolean formated){
         if(formated){
             StringBuilder sb = new StringBuilder();
             sb.append("{").append("\n");
-            for(Map.Entry<String, NamedParameterMapObject> entry : parameters.entrySet()){
-                NamedParameterMapObject objectValue = entry.getValue();
+            for(Map.Entry<String, Object> entry : parameters.entrySet()){
                 String key = entry.getKey();
-                String stringValue = objectValue.isSqlInjection() ? ValueParseUtils.parse(objectValue.value) : SqlValueParseUtils.parse(objectValue.value);
-                String type = objectValue.value != null ? objectValue.value.getClass().getTypeName() : "null";
-                sb.append("\t").append("\"").append(key).append("\"").append(" (").append(type).append(")").append(" : ").append(stringValue).append("\n");
+                String value = SqlValueParser.parse(entry.getValue());
+                String type = entry.getValue() != null ? entry.getValue().getClass().getTypeName() : "null";
+                sb.append("\t").append("\"").append(key).append("\"").append(" (").append(type).append(")").append(" : ").append(value).append("\n");
             }
             sb.append("}").append("\n");
             return sb.toString();
         }else{
             Map<String, String> map = new HashMap<>(parameters.size());
-            for(Map.Entry<String, NamedParameterMapObject> entry : parameters.entrySet()){
-                map.put(entry.getKey(), SqlValueParseUtils.parse(entry.getValue().value));
+            for(Map.Entry<String, Object> entry : parameters.entrySet()){
+                map.put(entry.getKey(), SqlValueParser.parse(entry.getValue()));
             }
             return map.toString();
         }
     }
-
-    public class NamedParameterMapObject{
-
-        private Object value;
-        private boolean isSqlInjection;
-
-        public NamedParameterMapObject(Object value, boolean isSqlInjection) {
-            this.value = value;
-            this.isSqlInjection = isSqlInjection;
-        }
-
-        public NamedParameterMapObject(Object value) {
-            this(value, false);
-        }
-
-        public Object getValue() {
-            return value;
-        }
-
-        public void setValue(Object value) {
-            this.value = value;
-        }
-
-        public boolean isSqlInjection() {
-            return isSqlInjection;
-        }
-
-        public void setSqlInjection(boolean sqlInjection) {
-            this.isSqlInjection = sqlInjection;
-        }
-    }
-
 }
