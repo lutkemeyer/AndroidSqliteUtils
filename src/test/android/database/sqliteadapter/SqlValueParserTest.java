@@ -190,7 +190,7 @@ public class SqlValueParserTest {
                 .append("CARRO");
         Assert.assertEquals("SELECT \n* \nFROM \nCARRO", SqlValueParser.parse(sqlInjectionObj));
     }
-    
+
     private static class ClassTest implements ISqlParameterValue {
 
         private String name;

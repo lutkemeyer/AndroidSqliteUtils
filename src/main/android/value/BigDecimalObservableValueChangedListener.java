@@ -1,10 +1,10 @@
-package main.android;
+package main.android.value;
 
 import java.math.BigDecimal;
 
-public abstract class BigDecimalObservableValueChangedListener extends ObservableValueChangedListener<BigDecimal> {
+public interface BigDecimalObservableValueChangedListener extends ObservableValueChangedListener<BigDecimal> {
     @Override
-    public BigDecimal parse(String originalValue) {
+    default BigDecimal parse(String originalValue) {
         try{
             if(originalValue != null && originalValue.contains(","))
                 originalValue = originalValue.replace(",", ".");
