@@ -1,4 +1,4 @@
-package main.android.database.utils.consultas;
+package main.android.database.query;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +14,7 @@ public class FilterParams {
         return params.get(key);
     }
 
-    public Object get(String key, Object defaultValue){
+    public Object getOrDefault(String key, Object defaultValue){
         if(params.containsKey(key))
             return params.get(key);
         return defaultValue;

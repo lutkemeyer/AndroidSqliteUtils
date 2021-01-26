@@ -1,4 +1,4 @@
-package main.android.database.utils.consultas;
+package main.android.database.query;
 
 import java.util.ArrayList;
 import java.util.List;
