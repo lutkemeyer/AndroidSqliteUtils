@@ -32,7 +32,7 @@ public class PaginatedListTest {
         PaginatedList<String> paginatedList = new PaginatedList<String>()
                 .setTotalCount(20)
                 .setContentList(Arrays.asList("Guilherme", "Lesley"));
-        
+
         Assert.assertEquals(20, paginatedList.getTotalCount());
         Assert.assertNotNull(paginatedList.getContentList());
         Assert.assertEquals(2, paginatedList.getContentList().size());
