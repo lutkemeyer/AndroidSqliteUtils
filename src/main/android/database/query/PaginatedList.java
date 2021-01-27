@@ -5,15 +5,14 @@ import java.util.List;
 
 public class PaginatedList<T> {
 
-    private int totalCount;
-    private List<T> contentList;
+    private int totalCount = 0;
+    private List<T> contentList = new ArrayList<>();
 
     public PaginatedList() {
-        this(0, null);
     }
     public PaginatedList(int totalCount, List<T> contentList) {
-        this.totalCount = Math.max(totalCount, 0);
-        this.contentList = contentList != null ? contentList : new ArrayList<>();
+        setTotalCount(totalCount);
+        setContentList(contentList);
     }
 
     public int getTotalCount() {
